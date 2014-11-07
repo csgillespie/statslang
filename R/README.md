@@ -10,3 +10,9 @@
 
 See `src/regression.pdf` for the R solution.
 
+### Monte Carlo example
+
+The aim is to integrate the standard normal distribution from -5 to 5, using a 
+simpe Monte Carlo rejection scheme. Bonus points for running in parallel.
+
+See `src/monte_carlo.pdf` for the R solution.
