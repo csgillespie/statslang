@@ -1,0 +1,189 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>example1_regression</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-11-19"><meta name="DC.source" content="example1_regression.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% Load dataset. Note: this example uses MATLAB's table data structure to</span>
+<span class="comment">% store the content of the .csv file (table is available since</span>
+<span class="comment">% MATLAB R2013b)</span>
+data = readtable(<span class="string">'../data/regression.csv'</span>);
+
+<span class="comment">% Convert the Sex column from strings to MATLAB's categorical data type.</span>
+data.Sex = categorical(data.Sex);
+
+<span class="comment">% Plot the data and colour the points by gender. The third argument (empty</span>
+<span class="comment">% square brackets, i.e. []) tells MATLAB to use its default.</span>
+figure;
+scatter(data.Age, data.OI, [], data.Sex, <span class="string">'filled'</span>);
+xlabel(<span class="string">'Age'</span>);
+ylabel(<span class="string">'OI'</span>);
+
+<span class="comment">% Clean up the data by removing rows with negative age</span>
+data = data(data.Age &gt; 0, :);
+
+<span class="comment">% Log transform OI for data fitting</span>
+data.logOI = log(data.OI);
+
+<span class="comment">% Fit a multiple regression model according to the formula:</span>
+<span class="comment">%   log(OI) ~ Age + Sex</span>
+<span class="comment">% Note that by not terminating the line with ; we get the ANOVA summary</span>
+model = fitlm(data, <span class="string">'logOI ~ Age + Sex'</span>)
+
+<span class="comment">% Standard residual plot. Other residuals are available: Raw, Pearson,</span>
+<span class="comment">% Standardized, Studentized</span>
+figure;
+qqplot(model.Residuals.Raw);
+
+<span class="comment">% Fitted values vs residual plot</span>
+figure;
+scatter(model.Fitted, model.Residuals.Raw, [], data.Sex, <span class="string">'filled'</span>);
+xlabel(<span class="string">'Fitted values'</span>);
+ylabel(<span class="string">'Residual'</span>);
+
+<span class="comment">% Age vs residual plot coloured by gender</span>
+figure;
+scatter(data.Age, model.Residuals.Raw, [], data.Sex, <span class="string">'filled'</span>);
+xlabel(<span class="string">'Age'</span>);
+ylabel(<span class="string">'Residual'</span>);
+
+<span class="comment">% Boxplot of residuals separated by gender</span>
+figure;
+boxplot(model.Residuals.Raw, data.Sex)
+xlabel(<span class="string">'Sex'</span>);
+ylabel(<span class="string">'Residual'</span>);
+</pre><pre class="codeoutput">
+model = 
+
+
+Linear regression model:
+    logOI ~ 1 + Age + Sex
+
+Estimated Coefficients:
+                   Estimate       SE        tStat       pValue  
+                   ________    _________    ______    __________
+
+    (Intercept)      0.8292      0.17771    4.6661    9.8341e-06
+    Age            0.016208    0.0035215    4.6027    1.2637e-05
+    Sex_Male         0.3189      0.11568    2.7567     0.0069774
+
+
+Number of observations: 100, Error degrees of freedom: 97
+Root Mean Squared Error: 0.455
+R-squared: 0.262,  Adjusted R-Squared 0.247
+F-statistic vs. constant model: 17.2, p-value = 3.96e-07
+</pre><img vspace="5" hspace="5" src="example1_regression_01.png" alt=""> <img vspace="5" hspace="5" src="example1_regression_02.png" alt=""> <img vspace="5" hspace="5" src="example1_regression_03.png" alt=""> <img vspace="5" hspace="5" src="example1_regression_04.png" alt=""> <img vspace="5" hspace="5" src="example1_regression_05.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Load dataset. Note: this example uses MATLAB's table data structure to 
+% store the content of the .csv file (table is available since 
+% MATLAB R2013b)
+data = readtable('../data/regression.csv');
+
+% Convert the Sex column from strings to MATLAB's categorical data type.
+data.Sex = categorical(data.Sex);
+
+% Plot the data and colour the points by gender. The third argument (empty
+% square brackets, i.e. []) tells MATLAB to use its default.
+figure;
+scatter(data.Age, data.OI, [], data.Sex, 'filled');
+xlabel('Age');
+ylabel('OI');
+
+% Clean up the data by removing rows with negative age
+data = data(data.Age > 0, :);
+
+% Log transform OI for data fitting
+data.logOI = log(data.OI);
+
+% Fit a multiple regression model according to the formula:
+%   log(OI) ~ Age + Sex
+% Note that by not terminating the line with ; we get the ANOVA summary
+model = fitlm(data, 'logOI ~ Age + Sex')
+
+% Standard residual plot. Other residuals are available: Raw, Pearson, 
+% Standardized, Studentized
+figure;
+qqplot(model.Residuals.Raw);
+
+% Fitted values vs residual plot
+figure;
+scatter(model.Fitted, model.Residuals.Raw, [], data.Sex, 'filled');
+xlabel('Fitted values');
+ylabel('Residual');
+
+% Age vs residual plot coloured by gender
+figure;
+scatter(data.Age, model.Residuals.Raw, [], data.Sex, 'filled');
+xlabel('Age');
+ylabel('Residual');
+
+% Boxplot of residuals separated by gender
+figure;
+boxplot(model.Residuals.Raw, data.Sex)
+xlabel('Sex');
+ylabel('Residual');
+
+##### SOURCE END #####
+--></body></html>
