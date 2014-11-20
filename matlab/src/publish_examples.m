@@ -2,5 +2,8 @@
 publish('example1_regression.m');
 publish('example1_regression.m', 'pdf');
 
+publish('example2_monte_carlo.m');
+publish('example2_monte_carlo.m', 'pdf');
+
 % Tidyng up: close all windows
 close all;
